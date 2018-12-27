@@ -19,29 +19,12 @@ public class StreamUtils {
         sort(Arrays.asList("a", "b", "c", "c"));
 
 
-
-
-
-        String strA = " abcd ", strB = null;
-
-
-        //limit & skip
-        List<Person> people = new ArrayList<>();
-        for(int i = 1; i <= 10000; i++) {
-            Person person = new Person(i, "name" + i);
-            people.add(person);
-        }
-        List<String> names = getName(10,5, people);
-        System.out.println(names);
-        //limit & skip 's short-circuit invalid after sorted.
-        List<Person> people1 = getSortName(10,5, people);
+        //
+//
 
         //List the word from a file without repeat.
         List<String> dWords = distinctWord(ConstPath.TXT_PATH);
         System.out.println(dWords);
-
-
-
 
     }
 
@@ -50,7 +33,6 @@ public class StreamUtils {
         System.out.printf("");
 
     }
-
 
 
     public void constractStream() {
@@ -235,11 +217,10 @@ public class StreamUtils {
     }
 
     /**
-     *
      * @param pathname
      * @return
      */
-    public static int countLongestLine(String pathname){
+    public static int countLongestLine(String pathname) {
         BufferedReader br = null;
         int longest = 0;
         try {
@@ -260,12 +241,11 @@ public class StreamUtils {
                 e.printStackTrace();
             }
         }
-        System.out.println("The length of the longest line is: " + longest);
+
         return longest;
     }
 
     /**
-     *
      * limit 返回 Stream 的前面 n 个元素；skip 则是扔掉前 n 个元素
      *
      * @param limit
@@ -273,34 +253,34 @@ public class StreamUtils {
      * @param personList
      * @return
      */
-    public static List<String> getName(int limit, int skip, List<Person> personList){
+    public static List<String> getName(int limit, int skip, List<Person> personList) {
         List<String> nameList = personList.stream().
                 map(Person::getName).limit(limit).skip(skip).collect(Collectors.toList());
-        System.out.println(nameList);
         return nameList;
     }
 
     /**
+     * limit & skip 's short-circuit invalid after sorted.
      *
      * @param limit
      * @param skip
      * @param personList
      * @return
      */
-    public static List<Person> getSortName(int limit, int skip, List<Person> personList){
+    public static List<Person> getSortName(int limit, int skip, List<Person> personList) {
         List<Person> nameList = personList.stream()
                 .sorted(Comparator.comparing(Person::getName))
                 .limit(limit).skip(skip).collect(Collectors.toList());
-        System.out.println(nameList);
         return nameList;
     }
 
     /**
      * Distinct the word from a file.
+     *
      * @param pathname
      * @return
      */
-    public static List<String> distinctWord(String pathname){
+    public static List<String> distinctWord(String pathname) {
         List<String> words = null;
         BufferedReader br = null;
         try {
@@ -327,8 +307,6 @@ public class StreamUtils {
         System.out.println("The sorted words are: " + words);
         return words;
     }
-
-
 
 
 }

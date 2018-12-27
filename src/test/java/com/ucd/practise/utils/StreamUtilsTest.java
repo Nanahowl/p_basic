@@ -1,10 +1,12 @@
 package com.ucd.practise.utils;
 
 import com.ucd.practise.consts.ConstPath;
+import com.ucd.practise.model.Person;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -55,4 +57,45 @@ public class StreamUtilsTest {
     }
 
 
+    @Test
+    public void checkTheStringTest() {
+        String strA = " abcd ", strB = null;
+        checkTheString(strA,1);
+        checkTheString(strB,1);
+        System.out.println(checkTheString(strA,2));
+        System.out.println(checkTheString(strB,2));
+    }
+
+    @Test
+    public void countLongestLineTest() {
+        System.out.println("The length of the longest line is: " + countLongestLine(ConstPath.TXT_PATH));
+    }
+
+    @Test
+    public void getNameTest() {
+        List<Person> people = new ArrayList<>();
+        for(int i = 1; i <= 10000; i++) {
+            Person person = new Person(i, "name" + i);
+            people.add(person);
+        }
+        List<String> names = getName(10,5, people);
+        System.out.println(names);
+    }
+
+    @Test
+    public void getSortNameTest() {
+        List<Person> people = new ArrayList<>();
+        for(int i = 1; i <= 10000; i++) {
+            Person person = new Person(i, "name" + i);
+            people.add(person);
+        }
+        List<Person> peopleList = getSortName(10,5, people);
+        System.out.println(peopleList);
+    }
+
+    @Test
+    public void distinctWordTest() {
+
+
+    }
 }
