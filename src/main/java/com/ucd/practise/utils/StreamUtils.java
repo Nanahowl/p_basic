@@ -1,7 +1,6 @@
 package com.ucd.practise.utils;
 
 
-import com.ucd.practise.consts.ConstPath;
 import com.ucd.practise.model.Person;
 
 import java.io.BufferedReader;
@@ -9,24 +8,12 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class StreamUtils {
-
-    public static void main(String[] args) {
-        sort(Arrays.asList("a", "b", "c", "c"));
-
-
-        //
-//
-
-        //List the word from a file without repeat.
-        List<String> dWords = distinctWord(ConstPath.TXT_PATH);
-        System.out.println(dWords);
-
-    }
 
     public static void sort(List<String> stringList) {
 
@@ -275,7 +262,7 @@ public class StreamUtils {
     }
 
     /**
-     * Distinct the word from a file.
+     * Distinct the word from a file, and then turn them to lowercase.
      *
      * @param pathname
      * @return
@@ -304,35 +291,172 @@ public class StreamUtils {
                 e.printStackTrace();
             }
         }
-        System.out.println("The sorted words are: " + words);
         return words;
     }
 
 
+    /**
+     * Checking whether the people list satisfy the requiring.
+     * type 1: all of the people are adult
+     * type 2: at least one child
+     *
+     * @param type
+     * @param people
+     * @return
+     */
+    public static boolean match(int type, List<Person> people) {
+        if (type == 1) {
+            boolean isAllAdult = people.stream().
+                    allMatch(p -> p.getAge() > 18);
+            return isAllAdult;
+        } else {
+            boolean isThereAnyChild = people.stream().
+                    anyMatch(p -> p.getAge() < 12);
+            return isThereAnyChild;
+        }
+
+    }
+
+
+    /**
+     * Generating random string in 2 type.
+     *
+     * @param type
+     * @return
+     */
+    public static Stream generator(int type) {
+        if (type == 1) {
+            Random seed = new Random();
+            Supplier<Integer> random = seed::nextInt;
+            Stream<Integer> output = Stream.generate(random).limit(10);
+            return output;
+        } else {
+            Stream output = Stream.generate(() -> (int) (System.nanoTime() % 100)).
+                    limit(10);
+            return output;
+        }
+    }
+
+    /**
+     * Using supplier generate the peron in particular formal.
+     * Then printing the output.
+     */
+    public static void supplier() {
+        Stream.generate(new PersonSupplier()).
+                limit(10).
+                forEach(p -> System.out.println(p.getName() + ", " + p.getAge()));
+    }
+
+    /**
+     * Stream.iterate
+     * iterate 跟 reduce 操作很像，接受一个种子值，和一个 UnaryOperator（例如 f）。
+     * 然后种子值成为 Stream 的第一个元素，f(seed) 为第二个，f(f(seed)) 第三个，以此类推。
+     * <p>
+     * Using iterator creating a arithmetic progression
+     *
+     * @param seed  the first elements of the stream.
+     * @param limit the limitation of stream.
+     * @param diff  the diff of between neighbor elements.
+     */
+    public static void iterator(int seed, int limit, int diff) {
+        Stream.iterate(seed, n -> n + diff).limit(limit).forEach(x -> System.out.print(x + " "));
+    }
+
+
+    /**
+     * groupingBy(Function, Collector)
+     * groupingBy(Function, Supplier, Collector)
+     * <p>
+     * Grouping by age and then printing the result.
+     */
+    public static void groupByAge() {
+        Map<Integer, List<Person>> personGroups = Stream.generate(new PersonSupplier()).
+                limit(100).
+                collect(Collectors.groupingBy(Person::getAge));
+        Iterator it = personGroups.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<Integer, List<Person>> persons = (Map.Entry) it.next();
+            System.out.println("Age " + persons.getKey() + " = " + persons.getValue().size());
+        }
+    }
+
+    /**
+     * partitioningBy(Predicate, Collector)
+     * Predicate: boolean
+     * partitioningBy 其实是一种特殊的 groupingBy，它依照条件测试的是否两种结果来构造返回的数据结构，
+     * get(true) 和 get(false) 能即为全部的元素对象。
+     * <p>
+     * Classify the children from people
+     */
+    public static void partitioningByAge() {
+        Map<Boolean, List<Person>> children = Stream.generate(new PersonSupplier()).
+                limit(100).
+                collect(Collectors.partitioningBy(p -> p.getAge() < 18));
+        System.out.println("Children number: " + children.get(true).size());
+        System.out.println("Adult number: " + children.get(false).size());
+    }
+
+    /**
+     * Reduce
+     * 字符串拼接、数值的 sum、min、max、average 都是特殊的 reduce
+     * 有起始值的 reduce() 都返回具体的对象。
+     * 没有起始值的 reduce()，由于可能没有足够的元素，返回的是 Optional
+     */
+
+    /**
+     * Reduce
+     * concating the input String array with particular split symbol.
+     *
+     * @param standard The condition for filter.
+     * @param list     The input array which needed to be concat.
+     * @param identity In the head of the result which is the identity of the result string
+     * @return
+     */
+    public static String concatString(String standard, String[] list, String identity) {
+        String concat = Stream.of(list).
+                filter(x -> x.compareTo(standard) > 0).
+                reduce(identity, String::concat);
+        return concat;
+    }
+
+    /**
+     * Reduce
+     * Using reduce to find the minimum or the maximum.
+     *
+     * @param nums The double nums
+     * @param type min & max
+     * @return
+     */
+    public static Double minOrMax(Double[] nums, String type) {
+
+        if ("min".equalsIgnoreCase(type)) {
+            double minValue = Stream.of(nums).reduce(Double.MAX_VALUE, Double::min);
+            return minValue;
+        } else {
+            double maxValue = Stream.of(nums).reduce(Double.MIN_VALUE, Double::max);
+            return maxValue;
+        }
+    }
+
+    /**
+     * Reduce
+     * The sum of the nums.
+     *
+     * @param nums The nums
+     * @param seed The origin num
+     * @return The sum of nums and origin num
+     */
+    public static Integer sum(Integer[] nums, Integer seed) {
+        Integer sumValue;
+        if (seed != null) {
+            sumValue = Stream.of(nums).reduce(seed, Integer::sum);
+        } else {
+            sumValue = Stream.of(nums).reduce(Integer::sum).get();
+        }
+        return sumValue;
+    }
 }
 
-//    public void generator(){
-//        Random seed = new Random();
-//        Supplier<Integer> random = seed::nextInt;
-//        Stream.generate(random).limit(10).forEach(System.out::println);
-//        //Another way
-//        IntStream.generate(() -> (int) (System.nanoTime() % 100)).
-//                limit(10).forEach(System.out::println);
-//    }
-
-
-//package com.mmears.record.stream;
-//
-
-//
-//@Slf4j
-//public class StreamPractise {
-//
-
-//    @Test
-//
-//
-//    @Test
 
 //
 //    @Test
@@ -372,51 +496,4 @@ public class StreamUtils {
 //                .findFirst().get();
 //        System.out.println(findFirst);
 //
-//
-//        //2.Reduce
-//        //字符串拼接、数值的 sum、min、max、average 都是特殊的 reduce
-//        //有起始值的 reduce() 都返回具体的对象。而对于第四个示例没有起始值的 reduce()，由于可能没有足够的元素，返回的是 Optional
-//
-//        // 字符串连接，concat = "ABCD"
-//        String concat = Stream.of("A", "B", "C", "D").reduce("", String::concat);
-//        System.out.println("The result of concat is: " + concat);
-//
-//        // 求最小值，minValue = -3.0
-//        double minValue = Stream.of(-1.5, 1.0, -3.0, -2.0).reduce(Double.MAX_VALUE, Double::min);
-//        System.out.println("The minimum value is: " + minValue);
-//
-//        // 求和，sumValue = 11, 有起始值
-//        int sumValue = Stream.of(1, 2, 3, 4).reduce(1, Integer::sum);
-//        System.out.println("The sum of those values is: " + sumValue);
-//
-//        // 求和，sumValue = 10, 无起始值
-//        sumValue = Stream.of(1, 2, 3, 4).reduce(Integer::sum).get();
-//        System.out.println("The sum of those values is: " + sumValue);
-//
-//        // 过滤，字符串连接，concat = "ace"
-//        concat = Stream.of("a", "B", "c", "D", "e", "F").
-//                filter(x -> x.compareTo("Z") > 0).
-//                reduce("", String::concat);
-//        System.out.println("The result of concat is: " + concat);
 //    }
-//
-//    @Test
-
-//
-
-//
-//    @Test
-//    public void match(){
-//        List<NoteBookReqDTO> notebooks = new ArrayList<>();
-//        List<NoteBookWorkStatus> workStatusList1 = new ArrayList<>();
-//        workStatusList1.add(NoteBookWorkStatus.WORKING);
-//        List<NoteBookWorkStatus> workStatusList2 = new ArrayList<>();
-//        workStatusList2.add(NoteBookWorkStatus.OFFLINE);
-//
-//        //notebooks.add(new NoteBookReqDTO("name1", "address1", workStatusList1, null));
-//    }
-//
-//    @Test
-
-//
-//}
